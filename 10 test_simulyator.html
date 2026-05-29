@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAXR MADAD KONSALT buxgalteriya maktabi - Test Simulyatori</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+        }
+        .correct-answer {
+            background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+            color: #065f46 !important;
+        }
+        .wrong-answer {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b !important;
+        }
+        .option-label {
+            transition: all 0.2s ease;
+        }
+        .option-label:hover:not(.disabled-option) {
+            background-color: #e5e7eb;
+            cursor: pointer;
+        }
+        .disabled-option {
+            cursor: default;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="text-center md:text-left mb-2 md:mb-0">
+                <h1 class="text-xl md:text-2xl font-bold">FAXR MADAD KONSALT</h1>
+                <p class="text-sm text-indigo-200">Buxgalteriya maktabi - Nomoddiy aktivlar bo'yicha test</p>
+            </div>
+            <div id="score-container" class="hidden bg-white text-indigo-700 px-4 py-2 rounded-lg font-bold shadow">
+                Natija: <span id="score-display">0</span> / 38 (<span id="percentage-display">0</span>%)
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 py-8">
+        
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="bg-white rounded-xl shadow-md p-8 text-center mt-10">
+            <svg class="w-20 h-20 mx-auto text-indigo-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Nomoddiy aktivlar bo'yicha yakuniy test</h2>
+            <p class="text-gray-600 mb-6 max-w-2xl mx-auto">
+                Ushbu simulyator 38 ta savoldan iborat. Barcha savollar O'zbekiston Respublikasi Buxgalteriya hisobining milliy standartlari (BHMS) va qonunchiligiga asoslangan. Test variantlari har safar tasodifiy tartibda joylashadi.
+            </p>
+            <button onclick="startTest()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 text-lg">
+                Testni boshlash
+            </button>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="hidden">
+            <div id="questions-list" class="space-y-6">
+                <!-- Questions will be injected here by JS -->
+            </div>
+            
+            <div class="mt-10 text-center">
+                <button id="submit-btn" onclick="finishTest()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-lg shadow-lg transition duration-300 text-lg w-full md:w-auto">
+                    Testni yakunlash va natijani ko'rish
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // 38 Questions Data
+        const questionsData = [
+            // File 1: Nomoddiy aktivlar to'g'risida umumiy tushunchalar
+            {
+                q: "1. Sherik kompaniya korxonaga ishlab chiqarishning eksklyuziv texnologiyasini sovg'a qildi. Sovg'a hech qanday hujjatlar bilan rasmiylashtirilmagan. Korxona bu texnologiyani nomoddiy aktiv sifatida hisobga olishi mumkinmi?",
+                opts: [
+                    "mumkin emas, negaki korxonada ushbu texnologiyaga bo'lgan mutlaq huquqni tasdiqlovchi tegishli ravishda rasmiylashtirilgan hujjat mavjud emas",
+                    "mumkin, chunki aktiv identifikatsiyalanadigan hisoblanadi, uni egasidan ajratsa bo'ladi.",
+                    "mumkin, chunki texnologiyadan korxonaning ishlab chiqarish faoliyatida foydalaniladi."
+                ],
+                ans: "mumkin emas, negaki korxonada ushbu texnologiyaga bo'lgan mutlaq huquqni tasdiqlovchi tegishli ravishda rasmiylashtirilgan hujjat mavjud emas"
+            },
+            {
+                q: "2. Nomoddiy aktivni hisobda tan olish uchun u quyidagi talablardan qaysi biriga javob berishi shart?",
+                opts: [
+                    "aktiv korxonaning xo'jalik faoliyatida foydalanish uchun xarid qilib olingan",
+                    "aktiv xarid qilinganda undan bir yildan kam vaqt foydalanish mo'ljallangan.",
+                    "aktiv qayta sotish uchun xarid qilingan."
+                ],
+                ans: "aktiv korxonaning xo'jalik faoliyatida foydalanish uchun xarid qilib olingan"
+            },
+            {
+                q: "3. Korxona buyurtmachining topshirig'iga binoan dastur yordamida boshqariladigan stanok uchun dasturiy ta'minot ishlab chiqdi. Dasturiy ta'minotni ishlab chiqqan korxona bu dasturiy ta'minotni nomoddiy aktiv sifatida hisobga olishi mumkinmi?",
+                opts: [
+                    "mumkin emas, negaki aktiv sotish uchun mo'ljallangan",
+                    "mumkin, chunki aktiv identifikatsiyalanadigan hisoblanadi, ya'ni uni korxonadan ajratsa bo'ladi.",
+                    "mumkin, chunki dasturiy ta'minot har doim nomoddiy aktiv bo'lib hisoblanadi."
+                ],
+                ans: "mumkin emas, negaki aktiv sotish uchun mo'ljallangan"
+            },
+            {
+                q: "4. Nomoddiy aktivning foydali xizmat muddatini aniqlashga qaysi omil ta'sir ko'rsatMAYdi?",
+                opts: [
+                    "nomoddiy aktivning qiymati",
+                    "qonun hujjatlari tomonidan foydalanish muddatining cheklanishi.",
+                    "ishlab chiqarilishi mumkin bo'lgan tayyor mahsulot (ishlar, xizmatlar)ning kutilayotgan soni"
+                ],
+                ans: "nomoddiy aktivning qiymati"
+            },
+            {
+                q: "5. Korxona savdo belgisiga – chiqariladigan mineral suvning original nomiga bo'lgan mutlaq huquqni ro'yxatdan o'tkazdi. Korxona uni nomoddiy aktivlar tarkibiga kiritishi mumkinmi?",
+                opts: [
+                    "mumkin, chunki savdo belgisiga bo'lgan mutlaq huquq nomoddiy aktiv hisoblanadi",
+                    "mumkin emas, negaki mineral suv moddiy shaklga ega",
+                    "mumkin emas, negaki mineral suv tayyor mahsulot hisoblanadi."
+                ],
+                ans: "mumkin, chunki savdo belgisiga bo'lgan mutlaq huquq nomoddiy aktiv hisoblanadi"
+            },
+            {
+                q: "6. Korxonaning hisob siyosatida hisobga qabul qilinayotgan nomoddiy aktivlarning qiymatiga nisbatan hech qanday chegara belgilanmagan. Bu holda korxona aktivni nomoddiy aktiv sifatida hisobga qabul qilishi uchun uning qiymati bo'yicha qanday shart bajarilishi kerak?",
+                opts: [
+                    "xarid paytidagi qiymati EKIHMning 50 baravaridan kam bo'lmasligi kerak",
+                    "xarid paytidagi qiymati EKIHMning 50 baravaridan kam bo'lishi kerak.",
+                    "xarid paytidagi qiymati EKIHMning 50 baravaridan ko'p bo'lmasligi kerak."
+                ],
+                ans: "xarid paytidagi qiymati EKIHMning 50 baravaridan kam bo'lmasligi kerak"
+            },
+            {
+                q: "7. Asosiy vosita qaysi mezon bo'yicha nomoddiy aktivdan farq qiladi?",
+                opts: [
+                    "asosiy vositalardan farqli ravishda, nomoddiy aktiv moddiy-ashyoviy shaklga ega emas",
+                    "ular foydali xizmat muddati bilan farq qiladilar.",
+                    "asosiy vositalardan farqli ravishda, nomoddiy aktivni keyinchalik sotish mo'ljallanadi."
+                ],
+                ans: "asosiy vositalardan farqli ravishda, nomoddiy aktiv moddiy-ashyoviy shaklga ega emas"
+            },
+            {
+                q: "8. Quyida keltirilganlardan qaysi birini nomoddiy aktivlar tarkibiga kiritib bo'lmaydi?",
+                opts: [
+                    "qattiq disk",
+                    "korxona foydalanadigan va kompakt-diskda saqlanadigan operatsion sistema",
+                    "korxonaning ma'lumotlar bazasi saqlangan kompakt-disk."
+                ],
+                ans: "qattiq disk"
+            },
+
+            // File 2: Nomoddiy aktivlarning kelib tushishi
+            {
+                q: "9. Pul evaziga olingan (sotib olingan) nomoddiy aktiv qaysi qiymatda hisobga qabul qilinadi?",
+                opts: [
+                    "xarid qilishga amalda ketgan xarajatlar summasida",
+                    "baholovchi tashkilot chiqargan qiymatda",
+                    "bozor narxida"
+                ],
+                ans: "xarid qilishga amalda ketgan xarajatlar summasida"
+            },
+            {
+                q: "10. Sotib olingan nomoddiy aktivning boshlang'ich qiymatiga qaysi xarajatlar kiritilMAYdi?",
+                opts: [
+                    "pul mablag'i o'tkazilgani uchun bank komissiyasi (bankning xizmat haqi)",
+                    "konsultant xizmati uchun to'lov.",
+                    "vositachilik haqi"
+                ],
+                ans: "pul mablag'i o'tkazilgani uchun bank komissiyasi (bankning xizmat haqi)"
+            },
+            {
+                q: "11. Sotib olingan (pul evaziga olingan) nomoddiy aktiv ekspluatatsiyaga (foydalanishga) topshirilganda buxgalteriya hisobida qanday o'tkazma qilinadi?",
+                opts: [
+                    "Dt 0400 «Nomoddiy aktivlarni hisobga olish schyotlari» Kt 0830 «Nomoddiy aktivlarni xarid qilish»",
+                    "Dt 0830 «Nomoddiy aktivlarni xarid qilish» Kt 6010 «Mol yetkazib beruvchilar va pudratchilarga to'lanadigan schyotlar»",
+                    "Dt 0400 «Nomoddiy aktivlarni hisobga olish schyotlari» Kt 6010 «Mol yetkazib beruvchilar va pudratchilarga to'lanadigan schyotlar»"
+                ],
+                ans: "Dt 0400 «Nomoddiy aktivlarni hisobga olish schyotlari» Kt 0830 «Nomoddiy aktivlarni xarid qilish»"
+            },
+            {
+                q: "12. Korxonaning o'zi tomonidan yaratilgan nomoddiy aktiv qaysi qiymatda hisobga kiritiladi?",
+                opts: [
+                    "ishlab chiqishga (yaratishga) amalda qilingan xarajatlar summasida",
+                    "ta'sischilar o'rtasida o'zaro kelishilgan qiymatda",
+                    "bozor qiymatida"
+                ],
+                ans: "ishlab chiqishga (yaratishga) amalda qilingan xarajatlar summasida"
+            },
+            {
+                q: "13. Buyurtmachilarning topshiriqlariga binoan dasturiy ta'minot ishlab chiqish korxonaning asosiy faoliyati hisoblanadi. Mazkur korxonaning buxgalteri bu dasturiy ta'minot mahsulotlarining boshlang'ich qiymatini qaysi schyotda shakllantiradi?",
+                opts: [
+                    "2010 «Asosiy ishlab chiqarish»",
+                    "0890 «Boshqa kapital qo'yilmalar».",
+                    "0430 «Dasturiy ta'minot»"
+                ],
+                ans: "2010 «Asosiy ishlab chiqarish»"
+            },
+            {
+                q: "14. Korxona - 20% stavkada QQS to'lovchisi, internet tarmog'ida o'zining Web-sahifasini yaratmoqda, bu sahifada o'zi ishlab chiqaradigan mahsulot haqidagi ma'lumotlarni joylashtiriladi. Shu munosabat bilan korxona quyidagi xarajatlarni qildi:\n- web-sahifani yaratishda band bo'lgan ishchilarning mehnat haqi xarajati – 11 040 ming so'm;\n- bu ishchilarning mehnat haqi bilan bog'liq ijtimoiy sug'urta ajratmalari – 2 760 ming so'm;\n- sahifani ro'yxatdan o'tkazish bilan bog'liq xizmatlarga – 250 ming so'm, QQSsiz;\n- sahifani yaratish bilan bog'liq sarflangan TMZ qiymati - 1 620 ming so'm, shu jumladan QQS - 20%;\n- web-sahifa yaratishda ishlatilgan uskuna bo'yicha amortizatsiya - 230 ming so'm.\nKorxonaning o'zida yaratilgan bu nomoddiy aktivning qiymati qancha bo'ladi?",
+                opts: [
+                    "15 630 ming so'm",
+                    "15 380 ming so'm",
+                    "15 900 ming so'm"
+                ],
+                ans: "15 630 ming so'm"
+            },
+            {
+                q: "15. Nomoddiy aktivning ustav kapitaliga ulush sifatida kirib kelishi qanday buxgalteriya o'tkazmasi bilan aks ettiriladi?",
+                opts: [
+                    "Dt 0830 «Nomoddiy aktivlarni xarid qilish» Kt 4610 «Ta'sischilarning ustav fondiga qarzdorligi»",
+                    "Dt 0400 «Nomoddiy aktivlarni hisobga oluvchi schyotlar» Kt 0830 «Nomoddiy aktivlarni xarid qilish»",
+                    "Dt 4610 «Ta'sischilarning ustav fondiga qarzdorligi» Kt 8330 «Pay va ulushlar»"
+                ],
+                ans: "Dt 0830 «Nomoddiy aktivlarni xarid qilish» Kt 4610 «Ta'sischilarning ustav fondiga qarzdorligi»"
+            },
+            {
+                q: "16. Korxona ustav fondiga ulush sifatida o'zining ta'sischisidan yer uchastkasidan foydalanish huquqini oldi. Lekin bu olingan huquqdan foydalanish uchun uni tegishli davlat organlarida ro'yxatdan o'tkazish kerak ekani ma'lum bo'lib qoldi. Davlat organlarida rasmiylashtirish xarajati quyidagilardan qaysinisiga o'tkaziladi?",
+                opts: [
+                    "Yer uchastkasidan foydalanish huquqi qiymatini oshirishga",
+                    "Korxonaning joriy xarajatlariga",
+                    "Kelgusi davr xarajatlariga"
+                ],
+                ans: "Yer uchastkasidan foydalanish huquqi qiymatini oshirishga"
+            },
+
+            // File 3: NMAni amortizatsiyalash
+            {
+                q: "17. Korxona nomoddiy aktiv ob'yektini 33 120 ming so'mga xarid qildi, shu jumladan QQS - 20%. Korxona 20% stavkada QQS to'lovchisi. Ushbu ob'yektning foydali xizmat muddatini aniqlab bo'lmadi. Bu holda mazkur aktiv bo'yicha hisoblanadigan oylik amortizatsiya summasi qancha bo'ladi?",
+                opts: [
+                    "460 ming so'm",
+                    "2 300 ming so'm",
+                    "552 ming so'm"
+                ],
+                ans: "460 ming so'm"
+            },
+            {
+                q: "18. Amortizatsiya hisoblashda qoldiqni kamaytirish usuli qo'llanilsa, qanday ko'rsatkichlar hisobga olinadi?",
+                opts: [
+                    "aktivning qoldiq qiymati va amortizatsiyaning ikki karra normasi",
+                    "aktivning boshlang'ich qiymati hamda amortizatsiya hisoblash muddati tugaguniga qadar qolga yillarning to'liq soni va amortizatsiya muddatini tashkil etadigan sonlar tartibi summasining nisbati",
+                    "boshlang'ich qiymat va foydali xizmat muddati"
+                ],
+                ans: "aktivning qoldiq qiymati va amortizatsiyaning ikki karra normasi"
+            },
+            {
+                q: "19. Amortizatsiya hisoblashda ishlab chiqarish usuli qo'llanilsa, qanday ko'rsatkichlar hisobga olinadi?",
+                opts: [
+                    "muayyan yilda aktivdan foydalangan holda chiqarilgan mahsulot hajmi",
+                    "amortizatsiyaning ikki karra normasi.",
+                    "foydali xizmat muddati sonlarining yig'indisi."
+                ],
+                ans: "muayyan yilda aktivdan foydalangan holda chiqarilgan mahsulot hajmi"
+            },
+            {
+                q: "20. Tovar belgilari bo'yicha amortizatsiya hisoblanganda qanday buxgalteriya o'tkazmasi qilinadi?",
+                opts: [
+                    "Dt 9410 «Sotish xarajatlari» 0500 «Nomoddiy aktivlar amortizatsiyasi»",
+                    "Dt 2010 «Tugallanmagan qurilish» 0500 «Nomoddiy aktivlar amortizatsiyasi»",
+                    "Dt 9420 «Ma'muriy xarajatlar» 0500 «Nomoddiy aktivlar amortizatsiyasi»"
+                ],
+                ans: "Dt 9410 «Sotish xarajatlari» 0500 «Nomoddiy aktivlar amortizatsiyasi»"
+            },
+            {
+                q: "21. Mahsulot ishlab chiqarish jarayonida foydalaniladigan dasturiy ta'minot bo'yicha amortizatsiya hisoblashda qanday buxgalteriya o'tkazmasi qilinadi?",
+                opts: [
+                    "Dt 2010 «Tugallanmagan qurilish» 0500 «Nomoddiy aktivlar amortizatsiyasi»",
+                    "Dt 2010 «Tugallanmagan qurilish» 0200 «Asosiy vositalar amortizatsiyasi»",
+                    "Dt 9420 «Ma'muriy xarajatlar» 0500 «Nomoddiy aktivlar amortizatsiyasi»"
+                ],
+                ans: "Dt 2010 «Tugallanmagan qurilish» 0500 «Nomoddiy aktivlar amortizatsiyasi»"
+            },
+            {
+                q: "22. Korxonada ma'muriy maqsadlarda foydalaniladigan dasturiy ta'minot bo'yicha amortizatsiya hisoblanganda qanday buxgalteriya o'tkazmasi qilinadi?",
+                opts: [
+                    "Dt 9420 «Ma'muriy xarajatlar» 0500 «Nomoddiy aktivlar amortizatsiyasi»",
+                    "Dt 9420 «Ma'muriy xarajatlar» 0200 «Asosiy vositalar amortizatsiyasi»",
+                    "Dt 9410 «Sotish xarajatlari» 0500 «Nomoddiy aktivlar amortizatsiyasi»"
+                ],
+                ans: "Dt 9420 «Ma'muriy xarajatlar» 0500 «Nomoddiy aktivlar amortizatsiyasi»"
+            },
+            {
+                q: "23. Korxona - 20%lik stavkada QQS to'lovchi, mualliflik shartnomasiga bo'yicha «Bolalar ensiklopediyasi»ni 750 000 nusxada chop etish huquqini 6 yil muddatga sotib oldi va ushbu huquq uchun 20%lik QQS bilan birga hisoblaganda 14 256 ming so'm to'ladi. Korxona to'g'ri chiziqli amortizatsiya usulini qo'llasa, oylik hisoblanadigan amortizatsiya ajratmalari summasi qancha bo'ladi?",
+                opts: [
+                    "165 ming so'm",
+                    "198 ming so'm",
+                    "990 ming so'm"
+                ],
+                ans: "165 ming so'm"
+            },
+            {
+                q: "24. Korxona mahsulot ishlab chiqarishda foydalanish uchun ixtiroga patent xarid qilib oldi. Patent uchun 20% QQS bilan birga 30 000 ming so'm to'ladi. Bu patentdan foydalangan holda 10 000 kg mahsulot ishlab chiqarish mo'ljallangan. Hisobot davrida 150 kg mahsulot ishlab chiqarilgan. Korxona umumbelgilangan tartibda 20% stavkada QQS to'laydi. Amortizatsiya hisoblash uchun ishlab chiqarish usulidan foydalanilsa, hisobot davri uchun hisoblanadigan amortizatsiya summasi qancha bo'ladi?",
+                opts: [
+                    "375 ming so'm",
+                    "450 ming so'm",
+                    "2,5 ming so'm"
+                ],
+                ans: "375 ming so'm"
+            },
+
+            // File 4: Nomoddiy aktivlarning chiqib ketishi
+            {
+                q: "25. Litsenziya shartnomasi bo'yicha «A» korxonasi «B» korxonasiga kompyuter dasturidan foydalanish huquqini berdi. Nomoddiy aktivning harakati «A» korxonasining buxgalteriya hisobida qanday qilib aks ettiriladi?",
+                opts: [
+                    "«A» korxonasi nomoddiy aktivni o'z balansidan chiqarmaydi",
+                    "«A» korxonasi nomoddiy aktivni o'z balansidan chiqaradi",
+                    "«A» korxonasi nomoddiy aktivni o'z balansidan chiqarib balansdan tashqarida hisobga oladi"
+                ],
+                ans: "«A» korxonasi nomoddiy aktivni o'z balansidan chiqarmaydi"
+            },
+            {
+                q: "26. QQSni 20% stavkada to'lovchi bo'lgan qurilish korxonasi patentdan o'zganing foydasiga voz kechish to'g'risidagi shartnoma bo'yicha bino poydevorini mustahkamlash usuliga mutlaq huquqni sotmoqda, shartnoma qiymati 20% QQS bilan birga – 42 540 ming so'm. Aktivning boshlang'ich qiymati – 14 200 ming so'm, jamlangan amortizatsiya – 8 520 ming so'm, qayta baholash qoldigi – 450 ming so'm. Voz kechish shartnomasini ro'yxatdan o'tkazish uchun sotuvchi tomonidan to'langan davlat boji qiymati – 250 ming so'm. Nomoddiy aktivni sotishdan ko'rilgan moliyaviy natija qanday bo'ladi?",
+                opts: [
+                    "29 970 ming so'm miqdorida foyda",
+                    "29 970 ming so'm miqdorida zarar",
+                    "37 060 ming so'm miqdorida foyda"
+                ],
+                ans: "29 970 ming so'm miqdorida foyda"
+            },
+            {
+                q: "27. Nomoddiy aktivni sotish natijasida zarar ko'rildi. Bu zarar summasini qaysi schyotga kiritish lozim?",
+                opts: [
+                    "9430 «Boshqa operatsion xarajatlar»",
+                    "9690 «Moliyaviy faoliyat bo'yicha boshqa xarajatlar»",
+                    "9410 «Sotish xarajatlari»"
+                ],
+                ans: "9430 «Boshqa operatsion xarajatlar»"
+            },
+            {
+                q: "28. Korxona nomoddiy aktiv ob'yektini tekinga berib yubormoqda. Bu ob'yekt bo'yicha jamlangan amortizatsiya qanday buxgalteriya o'tkazmasi bilan hisobdan chiqariladi?",
+                opts: [
+                    "Dt 0500 «Nomoddiy aktivlar amortizatsiyasi»; Kt 9220 «Boshqa aktivlarning chiqib ketishi»",
+                    "Dt 0500 «Nomoddiy aktivlar amortizatsiyasi»; Kt 9390 «Boshqa operatsion daromadlar»",
+                    "Dt 8530 «Tekinga olingan mulk»; Kt 0500 «Nomoddiy aktivlar amortizatsiyasi»"
+                ],
+                ans: "Dt 0500 «Nomoddiy aktivlar amortizatsiyasi»; Kt 9220 «Boshqa aktivlarning chiqib ketishi»"
+            },
+            {
+                q: "29. Korxona tovar belgisiga bo'lgan mutlaq huquqni topshiradi. Topshirilayotgan mutlaq huquq korxona balansidan qaysi qiymati bo'yicha chiqariladi?",
+                opts: [
+                    "qoldiq qiymati",
+                    "bozor qiymati",
+                    "boshlang'ich qiymati"
+                ],
+                ans: "qoldiq qiymati"
+            },
+            {
+                q: "30. Korxona nomoddiy aktiv ob'yektini tekinga berib yubormoqda. Bu ob'yektining boshlang'ich qiymati qanday buxgalteriya o'tkazmasi bilan hisobdan chiqariladi?",
+                opts: [
+                    "Dt 9220 «Boshqa aktivlarning chiqib ketishi»; Kt 0400 «Nomoddiy aktivlar»",
+                    "Dt 8530 «Tekinga olingan mulk»; Kt 0400 «Nomoddiy aktivlar»",
+                    "Dt 9430 «Boshqa operatsion xarajatlar»; Kt 0400 «Nomoddiy aktivlar»"
+                ],
+                ans: "Dt 9220 «Boshqa aktivlarning chiqib ketishi»; Kt 0400 «Nomoddiy aktivlar»"
+            },
+            {
+                q: "31. «A» korxonasi ustav kapitaliga ulush sifatida «B» korxonasiga nomoddiy bermoqda. Ushbu operatsiya «B» korxonasining moliyaviy natijalariga qanday ta'sir qiladi?",
+                opts: [
+                    "ushbu operatsiya «B» korxonasining moliyaviy natijalariga ta'sir ko'rsatmaydi",
+                    "«B» korxonasi zarar ko'radi",
+                    "«B» korxonasi foyda oladi"
+                ],
+                ans: "ushbu operatsiya «B» korxonasining moliyaviy natijalariga ta'sir ko'rsatmaydi"
+            },
+            {
+                q: "32. Korxona patent bilan tasdiqlangan huquqni ustav kapitaliga ulush sifatida kiritmoqda. Bu aktiv qaysi paytda balansdan chiqarilishi lozim?",
+                opts: [
+                    "bitim davlat ro'yxatidan o'tganidan keyin",
+                    "ta'sis shartnomasi tuzilgandan so'ng",
+                    "qabul qilish-topshirish dalolatnomasi imzolangandan so'ng"
+                ],
+                ans: "bitim davlat ro'yxatidan o'tganidan keyin"
+            },
+
+            // File 5: Gudvill
+            {
+                q: "33. Salbiy Gudvill qanday muddat davomida hisobdan chiqariladi?",
+                opts: [
+                    "sotib olingan amortizatsiyalanadigan alohida aktivlarning o'rtacha tortilgan foydali xizmat muddati",
+                    "korxonaning faoliyat yuritish davri davomida",
+                    "bir vaqtning o'zida bir yo'la hisobdan chiqariladi"
+                ],
+                ans: "sotib olingan amortizatsiyalanadigan alohida aktivlarning o'rtacha tortilgan foydali xizmat muddati"
+            },
+            {
+                q: "34. Bir korxona tomonidan ikkinchi korxona sotib olinganda vujudga kelgan Gudvill qanday o'tkazma bilan hisobga kiritiladi?",
+                opts: [
+                    "Dt 0480 «Gudvill» Kt 0890 «Boshqa kapital qo'yilmalar»",
+                    "Dt 0480 «Gudvill» Kt 7230 «Boshqa uzoq muddatli kechiktirilgan daromadlar»",
+                    "Dt 0890 «Boshqa kapital qo'yilmalar» Kt 0480 «Gudvill»"
+                ],
+                ans: "Dt 0480 «Gudvill» Kt 0890 «Boshqa kapital qo'yilmalar»"
+            },
+            {
+                q: "35. «A» korxonasi - 20% stavkada QQS to'lovchisi. U «B» korxonasini 360 000 ming so'mga sotib olmoqda, bu summa ichida 20% QQS ham bor. Buxgalteriya balansiga ko'ra «B» korxonasining aktivlari quyidagilarni tashkil etadi:\n- asosiy vositalarning boshlang'ich qiymati –118 600 ming so'm;\n- ular bo'yicha amortizatsiya summasi – 36 200 ming so'm;\n- nomoddiy aktivlarning boshlang'ich qiymati – 15 000 ming so'm;\n- ular bo'yicha amortizatsiya summasi – 7 500 ming so'm;\n- o'rnatiladigan uskuna qiymati – 20 000 ming so'm;\n- ishlab chiqarish zahiralari – 65 300 ming so'm.\nMajburiyatlar mavjud emas.\nYuzaga kelgan Gudvill nimaga teng?",
+                opts: [
+                    "124 800 ming so'm",
+                    "184 800 ming so'm",
+                    "81 100 ming so'm"
+                ],
+                ans: "124 800 ming so'm"
+            },
+            {
+                q: "36. Vujudga kelgan salbiy Gudvill hisobda qanday o'tkazma bilan aks ettiriladi?",
+                opts: [
+                    "Dt 0890 «Boshqa kapital qo'yilmalar» Kt 7230 «Boshqa uzoq muddatli kechiktirilgan daromadlar»",
+                    "Dt 0890 «Boshqa kapital qo'yilmalar» Kt 9390 «Boshqa operatsion daromadlar»",
+                    "Dt 0890 «Boshqa kapital qo'yilmalar» Kt 0480 «Gudvill»"
+                ],
+                ans: "Dt 0890 «Boshqa kapital qo'yilmalar» Kt 7230 «Boshqa uzoq muddatli kechiktirilgan daromadlar»"
+            },
+            {
+                q: "37. Salbiy Gudvill qanday o'tkazma bilan hisobdan chiqariladi?",
+                opts: [
+                    "Dt 6230 «Boshqa kechiktirilgan daromadlar» Kt 9390 «Boshqa operatsion daromadlar»",
+                    "Dt 6230 «Boshqa kechiktirilgan daromadlar» Kt 9590 «Prochiye doxodi ot finansovoy deyatelnosti»",
+                    "Dt 6230 «Boshqa kechiktirilgan daromadlar» Kt asosiy faoliyatdan daromadlarni hisobga oluvchi schyotlar"
+                ],
+                ans: "Dt 6230 «Boshqa kechiktirilgan daromadlar» Kt 9390 «Boshqa operatsion daromadlar»"
+            },
+            {
+                q: "38. Gudvill bo'yicha amortizatsiya ajratmalari qanday davr mobaynida hisoblanadi?",
+                opts: [
+                    "amortizatsiya muddati 20 yildan oshmasligi lozim, lekin shu bilan birga bu muddat korxonaning faoliyat ko'rsatish davridan ko'p bo'lishi ham mumkin emas",
+                    "12 oy",
+                    "25 yil"
+                ],
+                ans: "amortizatsiya muddati 20 yildan oshmasligi lozim, lekin shu bilan birga bu muddat korxonaning faoliyat ko'rsatish davridan ko'p bo'lishi ham mumkin emas"
+            }
+        ];
+
+        let userAnswers = {};
+        let isTestFinished = false;
+
+        // Shuffle elements of an array
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Initialize Test
+        function startTest() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            renderQuestions();
+            window.scrollTo(0, 0);
+        }
+
+        // Render all questions dynamically
+        function renderQuestions() {
+            const listContainer = document.getElementById('questions-list');
+            listContainer.innerHTML = '';
+
+            questionsData.forEach((qData, index) => {
+                const questionBlock = document.createElement('div');
+                questionBlock.className = 'bg-white p-6 rounded-xl shadow-sm border border-gray-200';
+                
+                // Question Text
+                const qText = document.createElement('h3');
+                qText.className = 'text-lg font-semibold text-gray-800 mb-4 whitespace-pre-line';
+                qText.innerText = qData.q;
+                questionBlock.appendChild(qText);
+
+                // Options (Shuffled)
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'space-y-3';
+                
+                let shuffledOptions = shuffle([...qData.opts]);
+                
+                shuffledOptions.forEach((optText, optIndex) => {
+                    const optLabel = document.createElement('label');
+                    optLabel.className = 'option-label flex items-start p-3 border border-gray-300 rounded-lg cursor-pointer';
+                    optLabel.id = `label-q${index}-opt${optIndex}`;
+                    
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.name = `question-${index}`;
+                    radioInput.value = optText;
+                    radioInput.className = 'mt-1 w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500';
+                    radioInput.onchange = () => handleSelect(index, optText);
+
+                    const optSpan = document.createElement('span');
+                    optSpan.className = 'ml-3 text-gray-700 leading-tight';
+                    optSpan.innerText = optText;
+
+                    optLabel.appendChild(radioInput);
+                    optLabel.appendChild(optSpan);
+                    optionsContainer.appendChild(optLabel);
+                });
+
+                questionBlock.appendChild(optionsContainer);
+                listContainer.appendChild(questionBlock);
+            });
+        }
+
+        // Save selected answer
+        function handleSelect(questionIndex, selectedValue) {
+            if (isTestFinished) return;
+            userAnswers[questionIndex] = selectedValue;
+        }
+
+        // Submit and Calculate Score
+        function finishTest() {
+            if (isTestFinished) return;
+
+            const unanswered = questionsData.length - Object.keys(userAnswers).length;
+            if (unanswered > 0) {
+                const confirmSubmit = confirm(`Sizda ${unanswered} ta belgilanmagan savol qoldi. Testni yakunlashni xohlaysizmi?`);
+                if (!confirmSubmit) return;
+            }
+
+            isTestFinished = true;
+            document.getElementById('submit-btn').classList.add('hidden');
+            
+            let score = 0;
+
+            // Check answers and apply styles
+            questionsData.forEach((qData, index) => {
+                const selectedAns = userAnswers[index];
+                const isCorrect = selectedAns === qData.ans;
+                
+                if (isCorrect) score++;
+
+                const radioInputs = document.getElementsByName(`question-${index}`);
+                
+                radioInputs.forEach((input) => {
+                    input.disabled = true; // Disable further changes
+                    const label = input.parentElement;
+                    label.classList.add('disabled-option');
+
+                    if (input.value === qData.ans) {
+                        // Highlight the correct answer with Green
+                        label.classList.add('correct-answer');
+                    } else if (input.checked && !isCorrect) {
+                        // Highlight the wrongly selected answer with Red
+                        label.classList.add('wrong-answer');
+                    }
+                });
+            });
+
+            // Display Score in Header
+            const percentage = Math.round((score / questionsData.length) * 100);
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('percentage-display').innerText = percentage;
+            document.getElementById('score-container').classList.remove('hidden');
+
+            // Scroll to top to see score
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
